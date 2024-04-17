@@ -3,6 +3,8 @@ package services
 import (
 	"fmt"
 	"net/url"
+	"share-Gutenberg/models"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -56,19 +58,18 @@ func TestBooksFetcherGeneral(t *testing.T) {
 	t.Log("the function fetch properly addings param ids")
 
 }
-
 func TestSearch(t *testing.T) {
 	t.Log("testing function BooksFetcher with search params")
 	defaultParameters := url.Values{}
 	title, author := "Frankenstein", "Wollstonecraft"
 	defaultParameters.Add("search", fmt.Sprintf("%v %v", title, author))
 
-	searchTest, err3 := BooksFetcher(defaultParameters)
-	if err3 != nil {
+	searchTest, err := BooksFetcher(defaultParameters)
+	if err != nil {
 		t.Error("error fetching with search param")
 	}
 	t.Log("Total books: ", searchTest.Count)
-	var c = make(chan bool, searchTest.Count)
+	var c = make(chan bool, len(searchTest.Results))
 	go func(c chan bool) {
 		for _, book := range searchTest.Results {
 			autorsAndTitle := book.Title
@@ -93,4 +94,72 @@ func TestSearch(t *testing.T) {
 		}
 	}
 	t.Log("test search params ok")
+}
+
+func TestLanguageQuery(t *testing.T) {
+	t.Log("testing function BooksFetcher with languages query")
+	defaultParameters := url.Values{}
+	languages := "es"
+	defaultParameters.Add("languages", languages)
+	testLanguages, err := BooksFetcher(defaultParameters)
+	if err != nil {
+		t.Error("error fetching with languages query")
+	}
+	if testLanguages.Previous != "" {
+		t.Error("error, previous page its diferent from \"\" and it is the first page")
+	}
+	t.Log("this is first page, testing Previus value is default value \"\" ")
+
+	var c = make(chan string)
+	for _, book := range testLanguages.Results {
+		go func(c chan string, book models.Book) {
+			if slices.Contains(book.Languages, languages) {
+				c <- "ok"
+			} else {
+				t.Log(book.Languages, "run bitch run")
+				c <- ""
+			}
+		}(c, book)
+	}
+	for range testLanguages.Results {
+		ok := <-c
+		if ok != "ok" {
+			t.Error("there is some books that does not include the languages given as queery")
+			return
+		}
+	}
+	t.Log("all books in the first page includes the given language")
+
+	defaultParameters.Add("page", "2")
+	defaultParameters.Set("languages", "en")
+	languages = "en"
+	t.Log(defaultParameters)
+	testLanguages2, err := BooksFetcher(defaultParameters)
+	if err != nil {
+		t.Error("error fetching with languages query on page 2")
+	}
+	if testLanguages2.Previous == "" {
+		t.Error("error, previous page should not be  \"\", it has been used page=2 as query")
+	}
+	t.Log("this is second page, testing Previus exist ", testLanguages2.Previous)
+
+	var c2 = make(chan bool, len(testLanguages2.Results))
+	for _, book2 := range testLanguages2.Results {
+		go func(c chan bool, book models.Book) {
+			if slices.Contains(book.Languages, languages) {
+				c <- true
+			} else {
+				c <- false
+			}
+		}(c2, book2)
+	}
+
+	for range testLanguages2.Results {
+		ok := <-c2
+		if !ok {
+			t.Error("there is some books that does not include the languages given as queery in the second page")
+			return
+		}
+	}
+	t.Log("all books in the second page includes the given language")
 }

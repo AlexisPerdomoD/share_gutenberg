@@ -54,7 +54,7 @@ type Book struct {
 	DownloadCount int               `json:"download_count"`
 }
 
-type Response struct {
+type Gutendex struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
 	Previous string `json:"previous"`
