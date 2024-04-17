@@ -9,13 +9,10 @@ import (
 	"testing"
 )
 
-func checkResultValues(expected []string, value string) *[]string {
-	for index, expectedValue := range expected {
-		if value == expectedValue {
-			expected = append(expected[:index], expected[index+1:]...)
-		}
-	}
-	return &expected
+func checkResultValues(expected []string, value string) bool {
+	return slices.ContainsFunc(expected, func(s string) bool {
+		return strings.EqualFold(s, value)
+	})
 }
 func TestBooksFetcherGeneral(t *testing.T) {
 	t.Log("testing function BooksFetcher")
@@ -163,3 +160,40 @@ func TestLanguageQuery(t *testing.T) {
 	}
 	t.Log("all books in the second page includes the given language")
 }
+
+// as soon as the function detects an error finish and shows it
+func TestTopicQuery(t *testing.T) {
+	expected := "fiction"
+	defaultParameters := url.Values{}
+	defaultParameters.Set("topic", expected)
+
+	testTopic, err := BooksFetcher(defaultParameters)
+	if err != nil {
+		t.Error("error fetching books with topic query")
+	}
+	t.Log("books with the given topics to be evaluated: ", len(testTopic.Results))
+	var finish = make(chan bool, len(testTopic.Results))
+	defer close(finish)
+	for _, book := range testTopic.Results {
+
+		go func(f chan bool, book models.Book) {
+			var testSlice []string
+			testSlice = append(testSlice, strings.Split(strings.Join(book.BookShelves, " "), " ")...)
+			//format key words from books
+			testSlice = append(testSlice, strings.Split(strings.Join(book.Subjects, " "), " ")...)
+			testSlice = slices.CompactFunc(testSlice, strings.EqualFold)
+			f <- checkResultValues(testSlice, expected)
+		}(finish, book)
+	}
+	for range testTopic.Results {
+		ok := <-finish
+		if !ok {
+			t.Error("there were topic words expected and not found")
+			return
+		}
+	}
+}
+
+/*topic
+
+Use this to search for a case-insensitive key-phrase in books' bookshelves or subjects. For example, /books?topic=children gives books on the "Children's Literature" bookshelf, with the subject "Sick children -- Fiction", and so on. */
