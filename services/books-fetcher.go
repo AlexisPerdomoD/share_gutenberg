@@ -44,3 +44,21 @@ func BooksFetcher(params url.Values) (*m.Gutendex, error) {
 	}
 	return &books, nil
 }
+
+func BookFetcher(id string) (*m.Book, error) {
+	response, err := http.Get(URL_BASE + id)
+	if err != nil {
+		return nil, errors.New("something wnet wrong fetching from Gutendex, id:" + id)
+	}
+	body, err2 := io.ReadAll(response.Body)
+	defer response.Body.Close()
+	if err2 != nil {
+		return nil, errors.New("something went wrong reading gutenbex response with id: " + id)
+	}
+	var book m.Book
+	err3 := json.Unmarshal(body, &book)
+	if err3 != nil {
+		return nil, errors.New("something whent wrong deserializating gutenbex response, id:" + id)
+	}
+	return &book, nil
+}
