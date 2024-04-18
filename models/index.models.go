@@ -5,6 +5,12 @@ const (
 	Regular
 )
 
+type Err struct {
+	Error   error
+	Message string
+	Status  int
+}
+
 type User struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`

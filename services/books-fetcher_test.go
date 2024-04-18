@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"share-Gutenberg/models"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -191,6 +192,23 @@ func TestTopicQuery(t *testing.T) {
 			t.Error("there were topic words expected and not found")
 			return
 		}
+	}
+}
+
+func TestFetchBook(t *testing.T) {
+	const expected int = 84
+	test, err := BookFetcher(strconv.Itoa(expected))
+	if err != nil {
+		t.Error("error fetching book")
+	}
+	if test.Id != expected {
+		t.Error("did not get the book with the given id")
+	}
+	t.Log("invalid id test")
+	const invalid string = "invalid"
+	_, err2 := BookFetcher(invalid)
+	if err2.Status != 404 {
+		t.Error("there were not error with the given invalid parameter")
 	}
 }
 
