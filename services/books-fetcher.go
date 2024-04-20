@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	m "share-Gutenberg/models"
 )
 
@@ -64,4 +66,47 @@ func BookFetcher(id string) (*m.Book, *m.Err) {
 		return nil, &m.Err{Error: errors.New("not found"), Message: "there is not result for your request", Status: 404}
 	}
 	return &book, nil
+}
+
+func GetBookFile(b m.BookFileInfo) *m.Err {
+	response, err := http.Get(b.Format)
+	if err != nil {
+		return &m.Err{
+			Error:   errors.New("not found"),
+			Message: "there is not result for your request",
+			Status:  400,
+		}
+	}
+	defer response.Body.Close()
+
+	bookBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		return &m.Err{
+			Error:   errors.New("io failed"),
+			Message: "error reading",
+			Status:  500,
+		}
+	}
+
+	if _, err := os.Stat(b.Dir); os.IsNotExist(err) {
+		os.Mkdir(b.Dir, 0755)
+	}
+
+	bookFile, err := os.Create(filepath.Join(b.Dir, b.Name+b.Ext))
+	if err != nil {
+		return &m.Err{
+			Error:   err,
+			Message: "error creating bookfile",
+			Status:  500,
+		}
+	}
+	defer bookFile.Close()
+	if _, err := bookFile.Write(bookBytes); err != nil {
+		return &m.Err{
+			Error:   errors.New("failed to write the book file"),
+			Message: "error writing bookfile",
+			Status:  500,
+		}
+	}
+	return nil
 }

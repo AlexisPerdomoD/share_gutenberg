@@ -67,6 +67,8 @@ type Gutendex struct {
 	Results  []Book `json:"results"`
 }
 
+type BookFileInfo struct{ Name, Ext, Dir, Format string }
+
 /*
 
 //just reference for now

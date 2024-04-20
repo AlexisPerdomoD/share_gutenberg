@@ -3,6 +3,8 @@ package services
 import (
 	"fmt"
 	"net/url"
+	"os"
+	"path/filepath"
 	"share-Gutenberg/models"
 	"slices"
 	"strconv"
@@ -163,6 +165,9 @@ func TestLanguageQuery(t *testing.T) {
 }
 
 // as soon as the function detects an error finish and shows it
+/*topic
+
+Use this to search for a case-insensitive key-phrase in books' bookshelves or subjects. For example, /books?topic=children gives books on the "Children's Literature" bookshelf, with the subject "Sick children -- Fiction", and so on. */
 func TestTopicQuery(t *testing.T) {
 	expected := "fiction"
 	defaultParameters := url.Values{}
@@ -211,7 +216,63 @@ func TestFetchBook(t *testing.T) {
 		t.Error("there were not error with the given invalid parameter")
 	}
 }
+func TestGetBookFile(t *testing.T) {
+	var bookInfo = models.BookFileInfo{
+		Name:   "test-file",
+		Dir:    "/home/sixela/test-dir",
+		Format: "https://www.gutenberg.org/ebooks/84.html.images",
+		Ext:    ".html",
+	}
 
-/*topic
+	if err := GetBookFile(bookInfo); err != nil {
+		t.Error(err.Error)
+	}
+	if _, err := os.Stat(filepath.Join(bookInfo.Dir, bookInfo.Name+bookInfo.Ext)); os.IsNotExist(err) {
+		t.Error("no created file, there is not file created")
+	}
+}
 
-Use this to search for a case-insensitive key-phrase in books' bookshelves or subjects. For example, /books?topic=children gives books on the "Children's Literature" bookshelf, with the subject "Sick children -- Fiction", and so on. */
+/*
+{
+  "id": 84,
+  "title": "Frankenstein; Or, The Modern Prometheus",
+  "authors": [
+    {
+      "name": "Shelley, Mary Wollstonecraft",
+      "birth_year": 1797,
+      "death_year": 1851
+    }
+  ],
+  "translators": [],
+  "subjects": [
+    "Frankenstein's monster (Fictitious character) -- Fiction",
+    "Frankenstein, Victor (Fictitious character) -- Fiction",
+    "Gothic fiction",
+    "Horror tales",
+    "Monsters -- Fiction",
+    "Science fiction",
+    "Scientists -- Fiction"
+  ],
+  "bookshelves": [
+    "Gothic Fiction",
+    "Movie Books",
+    "Precursors of Science Fiction",
+    "Science Fiction by Women"
+  ],
+  "languages": [
+    "en"
+  ],
+  "copyright": false,
+  "media_type": "Text",
+  "formats": {
+    "text/html": "https://www.gutenberg.org/ebooks/84.html.images",
+    "application/epub+zip": "https://www.gutenberg.org/ebooks/84.epub3.images",
+    "application/x-mobipocket-ebook": "https://www.gutenberg.org/ebooks/84.kf8.images",
+    "application/rdf+xml": "https://www.gutenberg.org/ebooks/84.rdf",
+    "image/jpeg": "https://www.gutenberg.org/cache/epub/84/pg84.cover.medium.jpg",
+    "text/plain; charset=us-ascii": "https://www.gutenberg.org/ebooks/84.txt.utf-8",
+    "application/octet-stream": "https://www.gutenberg.org/cache/epub/84/pg84-h.zip"
+  },
+  "download_count": 90657
+}
+*/
