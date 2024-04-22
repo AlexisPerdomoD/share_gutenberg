@@ -5,6 +5,8 @@ import (
 	"net/url"
 	m "share-Gutenberg/models"
 	s "share-Gutenberg/services"
+	"strconv"
+	"strings"
 )
 
 // App struct
@@ -34,4 +36,14 @@ func (a *App) GetBooks(params map[string]string) (*m.Gutendex, error) {
 	}
 
 	return s.BooksFetcher(paramsDone)
+}
+func (a *App) GetBook(id string) (*m.Book, *m.Err) {
+	if _, err := strconv.ParseInt(strings.Trim(id, " "), 10, 0); err != nil {
+		return nil, &m.Err{Error: err, Message: "expected a number for id", Status: 400}
+	}
+	book, err := s.BookFetcher(id)
+	if err != nil {
+		return nil, err
+	}
+	return book, nil
 }

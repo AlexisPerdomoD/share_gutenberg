@@ -23,6 +23,7 @@ const Home:FC = () => {
     const [books, setBooks] = useState<m.Book[]>()
     const [loading, setLoading] = useState<boolean>(false)
     const {queries} = useContext(QueryContext)
+    
      useEffect(()=>{
         setLoading(true)
          GetBooks(queries)

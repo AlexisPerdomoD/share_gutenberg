@@ -1,3 +1,5 @@
+import { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes } from "react";
+
 export interface Queries{
     [key: string]: string 
     category:string,
@@ -8,3 +10,8 @@ export interface Queries{
     languages:string,
     search:string
 }
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    text:string;
+}
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement>{}
+export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
