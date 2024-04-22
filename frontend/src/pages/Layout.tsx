@@ -1,10 +1,17 @@
-import { FC, ReactNode } from "react"
+import { FC, Suspense} from "react"
+import {  Outlet } from "react-router-dom"
+import NavBar from "../components/NavBar"
+import { QueryContextProvider } from "../contexts/Queries.context"
 
-const Layout:FC = ():ReactNode => {
+const Layout:FC = () => {
 return (
-<div>
-    <h1>small demosation</h1>
-</div>
+<QueryContextProvider>
+    <div>
+        <h1>La pagine</h1>
+            <Outlet/>
+        <NavBar/>
+    </div>
+</QueryContextProvider>
 )
 }
 

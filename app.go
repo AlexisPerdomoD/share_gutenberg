@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"net/url"
+	m "share-Gutenberg/models"
+	s "share-Gutenberg/services"
 )
 
 // App struct
@@ -21,3 +24,14 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // HERE ITS A GOOD PLACE TO SET CONTROLLERS
+
+func (a *App) GetBooks(params map[string]string) (*m.Gutendex, error) {
+	paramsDone := url.Values{}
+	for key, value := range params {
+		if value != "" {
+			paramsDone.Set(key, value)
+		}
+	}
+
+	return s.BooksFetcher(paramsDone)
+}

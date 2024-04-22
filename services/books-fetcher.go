@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	m "share-Gutenberg/models"
@@ -14,11 +13,11 @@ import (
 
 const URL_BASE = "http://gutendex.com/books"
 
-func buildURL(base string, params url.Values) string {
+func buildURL(base string, params m.Params) string {
 	return fmt.Sprintf("%s?%s", base, params.Encode())
 }
 
-func BooksFetcher(params url.Values) (*m.Gutendex, error) {
+func BooksFetcher(params m.Params) (*m.Gutendex, error) {
 	// set parameters
 	url := URL_BASE
 

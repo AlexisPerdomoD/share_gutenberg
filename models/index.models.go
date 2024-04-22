@@ -1,5 +1,7 @@
 package models
 
+import "net/url"
+
 const (
 	Admin = iota
 	Regular
@@ -66,7 +68,7 @@ type Gutendex struct {
 	Previous string `json:"previous"`
 	Results  []Book `json:"results"`
 }
-
+type Params = url.Values
 type BookFileInfo struct{ Name, Ext, Dir, Format string }
 
 /*
