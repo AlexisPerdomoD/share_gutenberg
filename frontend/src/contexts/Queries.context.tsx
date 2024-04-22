@@ -1,4 +1,4 @@
-import React, {ReactNode, createContext, useState } from "react";
+import {ReactNode, createContext, useState } from "react";
 import {Queries} from '../ts_models/ts.models';
 
 export const QueryContext = createContext<{queries:Queries,handleQueries?:Function}>({

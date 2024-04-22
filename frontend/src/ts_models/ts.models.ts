@@ -10,6 +10,8 @@ export interface Queries{
     languages:string,
     search:string
 }
+
+/* */
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     text:string;
 }

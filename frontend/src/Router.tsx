@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Home from "./pages/home/Home";
+import BookProfile,{loader as bookProfileLoader} from "./pages/book-profile/BookProfile";
 
 
 const router = createBrowserRouter([
@@ -19,7 +20,9 @@ const router = createBrowserRouter([
 
             },
             {
-                path:"/:id"
+                path:"/:id",
+                element:<BookProfile />,
+                loader:bookProfileLoader
                 //view and crud operations with books to collections
             },
             {
