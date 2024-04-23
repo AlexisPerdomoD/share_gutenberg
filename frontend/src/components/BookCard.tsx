@@ -1,8 +1,7 @@
 import { FC } from "react"
 import { models as m} from "../../wailsjs/go/models"
 import Button from "./Button"
-import { redirect } from "react-router-dom"
-
+import { NavLink } from "react-router-dom"
 
 const BookCard:FC<{ book: m.Book }> = ({ book }) => {
   return (
@@ -13,11 +12,12 @@ const BookCard:FC<{ book: m.Book }> = ({ book }) => {
             </picture>
             <h3>{book.title} {book.id}</h3>
         </div>
-        <a href={`/${book.id}`}>aver</a>
-        <Button
-        value={`${book.id}`}
-        onClick={()=> {redirect(`/${book.id}`)}}
-        text={`Book Profile id: ${book.id}`}
+        <NavLink 
+          to={`/${book.id}`} children={
+          <Button
+            value={`${book.id}`}
+            text={`Book Profile id: ${book.id}`}
+          />}
         />
     </div>
   )

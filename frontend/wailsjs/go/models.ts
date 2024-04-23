@@ -18,7 +18,11 @@ export namespace models {
 	    download_count: number;
 	}
 	
-	
+	export interface Err {
+	    error: any;
+	    message: string;
+	    status: number;
+	}
 	export interface Gutendex {
 	    count: number;
 	    next: string;
