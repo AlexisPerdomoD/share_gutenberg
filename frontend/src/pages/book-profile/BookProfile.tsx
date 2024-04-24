@@ -42,7 +42,11 @@ function renderFormats(book:m.Book):ReactNode{
 }
 /*
 application/epub+zip
-
+emailvarchar
+idint4
+namevarchar
+passwordvarchar
+rolevarchar
 https://www.gutenberg.org/ebooks/84.epub3.images
 
 application/octet-stream

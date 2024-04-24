@@ -2,7 +2,9 @@ package main
 
 import (
 	"embed"
+	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -12,6 +14,11 @@ import (
 var assets embed.FS
 
 func main() {
+	//load env file
+	errEnv := godotenv.Load()
+	if errEnv != nil {
+		log.Fatalf("env variables problem")
+	}
 	// Create an instance of the app structure
 	app := NewApp()
 

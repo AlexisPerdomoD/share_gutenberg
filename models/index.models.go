@@ -13,13 +13,16 @@ type Err struct {
 	Status  int    `json:"status"`
 }
 
-type User struct {
-	Id          int    `json:"id"`
+type UserInfo struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
-	collections []int  //`json:"collections"`
-	password    string
-	role        int
+	Collections []int  `json:"collections"`
+	Password    string `json:"password"`
+	Role        string `json:"role"`
+}
+type User struct {
+	Id int `json:"id"`
+	UserInfo
 }
 
 func (u *User) AddCollection(collection Collection) {
@@ -33,9 +36,10 @@ type Collection struct {
 	Id             int    `json:"id"`
 	CollectionName string `json:"name"`
 	Description    string `json:"description"`
-	documents      []int
-	Owner          int    `json:"owner_id"`
+	Documents      []int  `json:"documents"`
+	Owner          int    `json:"owner_id"` //only one usser can be owner
 	Category       string `json:"category"`
+	Public         bool   `json:"public"`
 }
 
 func (c *Collection) AddBook(bookId int) {
@@ -140,3 +144,4 @@ response from gutendex
     fmt.Printf("%+v\n", response.Results[0])
 }
 */
+//User
