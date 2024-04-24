@@ -14,14 +14,14 @@ type Err struct {
 }
 
 type UserInfo struct {
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Collections []int  `json:"collections"`
-	Password    string `json:"password"`
-	Role        string `json:"role"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 type User struct {
 	Id int `json:"id"`
+	//Collections []int `json:"collections"`
 	UserInfo
 }
 
