@@ -52,4 +52,18 @@ func TestUM(t *testing.T) {
 	} else {
 		t.Log(err5.Error())
 	}
+
+	t.Log("test update name from the user id 1")
+	userUpdates := m.UserInfo{
+		Name:     "nuevo Nombre separado",
+		Email:    "nuevo@email",
+		Password: "",
+		Role:     "",
+	}
+	if err6 := um.UpdateUser(1, &userUpdates); err6 != nil {
+		t.Error(err6)
+	} else {
+		t.Log("updates test done properly")
+	}
+
 }
