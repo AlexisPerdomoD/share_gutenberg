@@ -55,8 +55,7 @@ func (u *User) DeleteCollection(collection Collection) {
 
 } //todo
 
-type Collection struct {
-	Id             int       `json:"id"`
+type CollectionInfo struct {
 	CollectionName string    `json:"name"`
 	Description    string    `json:"description"`
 	Documents      []int     `json:"documents"`
@@ -65,6 +64,10 @@ type Collection struct {
 	Public         bool      `json:"public"`
 	CreatedAt      time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
+}
+type Collection struct {
+	Id int `json:"id"`
+	CollectionInfo
 }
 
 func (c *Collection) AddBook(bookId int) {
