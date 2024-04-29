@@ -1,6 +1,9 @@
 package models
 
-import "net/url"
+import (
+	"net/url"
+	"time"
+)
 
 const (
 	Admin = iota
@@ -14,11 +17,31 @@ type Err struct {
 }
 
 type UserInfo struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	Name      string    `json:"name" db:"name"`
+	Email     string    `json:"email" db:"email"`
+	Password  string    `json:"password" db:"password"`
+	Role      string    `json:"role" db:"role"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
+
+func (ui UserInfo) Iter() *map[string]string {
+	res := make(map[string]string)
+	if ui.Name != "" {
+		res["name"] = ui.Name
+	}
+	if ui.Email != "" {
+		res["email"] = ui.Email
+	}
+	if ui.Password != "" {
+		res["password"] = ui.Password
+	}
+	if ui.Role != "" {
+		res["role"] = ui.Role
+	}
+	return &res
+}
+
 type User struct {
 	Id int `json:"id"`
 	//Collections []int `json:"collections"`
@@ -33,13 +56,15 @@ func (u *User) DeleteCollection(collection Collection) {
 } //todo
 
 type Collection struct {
-	Id             int    `json:"id"`
-	CollectionName string `json:"name"`
-	Description    string `json:"description"`
-	Documents      []int  `json:"documents"`
-	Owner          int    `json:"owner_id"` //only one usser can be owner
-	Category       string `json:"category"`
-	Public         bool   `json:"public"`
+	Id             int       `json:"id"`
+	CollectionName string    `json:"name"`
+	Description    string    `json:"description"`
+	Documents      []int     `json:"documents"`
+	Owner          int       `json:"owner_id" db:"owner_id"` //only one usser can be owner
+	Category       string    `json:"category"`
+	Public         bool      `json:"public"`
+	CreatedAt      time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
 }
 
 func (c *Collection) AddBook(bookId int) {
