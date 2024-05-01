@@ -88,7 +88,13 @@ func GetBookFile(b m.BookFileInfo) *m.Err {
 	}
 
 	if _, err := os.Stat(b.Dir); os.IsNotExist(err) {
-		os.Mkdir(b.Dir, 0755)
+		if err2 := os.Mkdir(b.Dir, 0755); err2 != nil {
+			return &m.Err{
+				Status:  500,
+				Message: err.Error(),
+				Error:   err2,
+			}
+		}
 	}
 
 	bookFile, err := os.Create(filepath.Join(b.Dir, b.Name+b.Ext))

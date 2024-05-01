@@ -2,6 +2,7 @@ package models
 
 import (
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -56,7 +57,7 @@ func (u *User) DeleteCollection(collection Collection) {
 } //todo
 
 type CollectionInfo struct {
-	CollectionName string    `json:"name"`
+	CollectionName string    `json:"name" db:"collection_name"`
 	Description    string    `json:"description"`
 	Documents      []int     `json:"documents"`
 	Owner          int       `json:"owner_id" db:"owner_id"` //only one usser can be owner
@@ -65,6 +66,24 @@ type CollectionInfo struct {
 	CreatedAt      time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
 }
+
+func (ci *CollectionInfo) Iter() *map[string]string {
+	res := make(map[string]string)
+	if ci.CollectionName != "" {
+		res["collection_name"] = ci.CollectionName
+	}
+	if ci.Description != "" {
+		res["description"] = ci.Description
+	}
+	if ci.Owner != 0 {
+		res["owner_id"] = strconv.Itoa(ci.Owner)
+	}
+	if ci.Category != "" {
+		res["category"] = ci.Category
+	}
+	return &res
+}
+
 type Collection struct {
 	Id int `json:"id"`
 	CollectionInfo
