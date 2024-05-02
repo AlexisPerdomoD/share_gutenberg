@@ -1,9 +1,11 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	m "share-Gutenberg/models"
+	u "share-Gutenberg/utils"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -15,6 +17,8 @@ type CMI interface {
 	CreateCollection(*m.CollectionInfo) error
 	UpdateCollection(uint, *m.CollectionInfo) error
 	DeleteCollection(uint) error
+	DeleteBookToCollection(uint, uint) error
+	AddBookToCollection(uint, uint) error
 }
 
 type CMT struct {
@@ -84,6 +88,71 @@ func (cm *CMT) UpdateCollection(id uint, ci *m.CollectionInfo) error {
 func (cm *CMT) DeleteCollection(id uint) error {
 	if _, err := cm.DB.Exec("DELETE FROM collections WHERE id = $1", id); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (cm *CMT) AddBookToCollection(book int, cID int) error {
+	collection, err := cm.GetCollectionById(uint(cID))
+	if err != nil {
+		return err
+	}
+	indexCh := make(chan int)
+	finding, cancel := context.WithCancel(context.Background())
+	for idx, curr := range collection.Documents {
+		go u.Find(finding, indexCh, idx, curr, book)
+	}
+	for {
+		idx, ok := <-indexCh
+		//the chanel was close due context cancel or there is no more values to check
+		if !ok {
+			cancel()
+			break
+		}
+		//if there was found a value means the book is already in the documents collection
+		if idx != -1 {
+			cancel()
+			return errors.New("book already in the collection")
+		}
+	}
+	collection.Documents = append(collection.Documents, book)
+	if _, errUpdate := cm.DB.Exec(
+		`UPDATE collections SET documents = $1`,
+		pq.Array(collection.Documents),
+	); errUpdate != nil {
+		return errUpdate
+	}
+	return nil
+}
+func (cm *CMT) DeleteBookToCollection(book int, cID int) error {
+	collection, err := cm.GetCollectionById(uint(cID))
+	if err != nil {
+		return err
+	}
+	indexCh := make(chan int)
+	finding, cancel := context.WithCancel(context.Background())
+	for idx, curr := range collection.Documents {
+		go u.Find(finding, indexCh, idx, curr, book)
+	}
+	var idx int
+	for {
+		val, ok := <-indexCh
+		if !ok {
+			cancel()
+			return errors.New("book not found")
+		}
+		if idx != -1 {
+			cancel()
+			idx = val
+			break
+		}
+	}
+	collection.Documents = append(collection.Documents[:idx], collection.Documents[idx:]...)
+	if _, errUpdate := cm.DB.Exec(
+		`UPDATE collections SET documents = $1`,
+		pq.Array(collection.Documents),
+	); errUpdate != nil {
+		return errUpdate
 	}
 	return nil
 }
