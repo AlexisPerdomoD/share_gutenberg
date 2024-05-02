@@ -23,6 +23,21 @@ func TestCM(t *testing.T) {
 	t.Log("test CM intances")
 
 	cm := CMT{DB: db}
+	um := UMT{DB: db}
+
+	usrErr := um.CreateUser(&m.UserInfo{
+		Name:     "luis",
+		Email:    "email@valido",
+		Password: "HASHEADO",
+		Role:     "user",
+	})
+	if usrErr != nil {
+		t.Fatal(usrErr)
+	}
+	user, usrErr2 := um.GetUserByEmail("email@valido")
+	if usrErr2 != nil {
+		t.Fatal("error getting user by email")
+	}
 
 	collectionInfo := m.CollectionInfo{
 		CollectionName: "testino_collection",
@@ -31,15 +46,18 @@ func TestCM(t *testing.T) {
 		Public:         true,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
+		Owner:          user.Id,
+		Documents:      make([]int, 0),
 	}
 
-	if _, err := cm.CreateCollection(&collectionInfo); err != nil {
+	if err := cm.CreateCollection(&collectionInfo); err != nil {
+		t.Error(err)
 		t.Fatal("create collection failed")
 	}
 
 	test, err := cm.GetCollection("testino_collection")
 	if err != nil {
-		t.Fatal("error getting collection by name")
+		t.Error(err)
 	}
 	if test.CollectionName != "testino_collection" ||
 		test.Description != "esta es una coleccion para libros de terror" ||
@@ -52,22 +70,25 @@ func TestCM(t *testing.T) {
 	}
 	collectionUpdates := m.CollectionInfo{
 		Description: "nueva descripcion",
-		Category:    "horror",
+		Category:    "terror",
 	}
 	if err4 := cm.UpdateCollection(uint(test.Id), &collectionUpdates); err4 != nil {
-		t.Fatal("Error: problem updating the collection")
+		t.Fatal(err4)
 	}
 	updatedTest, err5 := cm.GetCollection(test.CollectionName)
 	if err5 != nil {
-		t.Fatal("Error: getting collection by name")
+		t.Fatal(err5)
 	}
 
-	if updatedTest.Category != "horror" ||
+	if updatedTest.Category != "terror" ||
 		updatedTest.Description != "nueva descripcion" {
 		t.Fatal("the given updated collection does not have the right field's name")
 	}
 
 	if err6 := cm.DeleteCollection(uint(updatedTest.Id)); err6 != nil {
 		t.Fatal("Error: problem found trying to delete the collection")
+	}
+	if deleteErr := um.DeleteUser(uint(user.Id)); deleteErr != nil {
+		t.Fatal("error deleting user")
 	}
 }
