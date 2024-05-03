@@ -15,6 +15,10 @@ type UMI interface {
 	DeleteUser(uint) *m.Err
 	UpdateUser(int, *m.UserInfo) (*m.User, *m.Err)
 	CreateUser(*m.UserInfo) error
+	//TODO
+	AddCollection(uint, uint) error
+	RemoveCollection(uint, uint) error
+	GetUserCollections(uint) (*m.UserCollections, *m.Err)
 }
 
 // USER MANAGER TYPE
@@ -88,4 +92,35 @@ func (um *UMT) DeleteUser(id uint) error {
 		return err
 	}
 	return nil
+}
+func (um UMT) AddCollection(user uint, collection uint) error {
+	if _, err := um.DB.Exec(`INSERT INTO user_collection (user_id, collection_id)
+	VALUES($1, $2)`, user, collection); err != nil {
+		return err
+	}
+	return nil
+}
+func (um UMT) RemoveCollection(user uint, collection uint) error {
+	if _, err := um.DB.Exec(`DELETE FROM user_collection
+	WHERE user_id = $1 AND collection_id = $2`,
+		user, collection); err != nil {
+		return err
+	}
+	return nil
+}
+func (um UMT) GetUserCollections(user uint) (*m.UserCollections, error) {
+	var userCollections m.UserCollections
+	if err := um.DB.Select(&userCollections.Added,
+		`SELECT c.* FROM collections as c
+		JOIN user_collection as uc ON
+		c.id = uc.collection_id
+		WHERE uc.user_id = $1`, user); err != nil {
+		return nil, err
+	}
+	if err := um.DB.Select(&userCollections.Owned,
+		`SELECT * FROM collections WHERE owner_id = $1`, user,
+	); err != nil {
+		return nil, err
+	}
+	return &userCollections, nil
 }
