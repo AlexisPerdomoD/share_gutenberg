@@ -3,21 +3,23 @@ package utils
 import "context"
 
 func Find(
-	c context.Context,
+	ctx context.Context,
 	ch chan int,
-	index int,
-	current interface{},
-	target interface{},
+	collection []int,
+	target int,
 ) {
 	defer close(ch)
-	select {
-	case <-c.Done():
-		return
-	default:
-		if current == target {
-			ch <- index
-		} else {
-			ch <- -1
+
+	for index, current := range collection {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			if current == target {
+				ch <- index
+			} else {
+				ch <- -1
+			}
 		}
 	}
 }

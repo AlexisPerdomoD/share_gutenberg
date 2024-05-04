@@ -8,7 +8,6 @@ import (
 	u "share-Gutenberg/utils"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
 
 // COLLECTION MANAGER INTERFACE
@@ -27,29 +26,23 @@ type CMT struct {
 
 func (cm *CMT) GetCollection(cn string) (*m.Collection, error) {
 	var collection m.Collection
-	var documents interface{}
 	//aqui se usa el metodo Scan personalizado
 	if err := cm.DB.QueryRowx(
 		"SELECT id, collection_name, description, category, documents, public, owner_id, created_at, updated_at FROM collections WHERE collection_name = $1;",
-		cn).Scan(&collection.Id, &collection.CollectionName, &collection.Description, &collection.Category, &documents, &collection.Public, &collection.Owner, &collection.CreatedAt, &collection.UpdatedAt); err != nil {
+		cn).Scan(&collection.Id, &collection.CollectionName, &collection.Description, &collection.Category, &collection.Documents, &collection.Public, &collection.Owner, &collection.CreatedAt, &collection.UpdatedAt); err != nil {
 		return nil, err
-	}
-	if errDoc := collection.ScanDocuments(documents); errDoc != nil {
-		return nil, errDoc
 	}
 	return &collection, nil
 }
 func (cm *CMT) GetCollectionById(id uint) (*m.Collection, error) {
-	var collection m.Collection
-	var documents interface{}
+	collection := m.Collection{}
+	//var documents  pq.Int64Array
 	//aqui se usa el metodo Scan personalizado
 	if err := cm.DB.QueryRowx(
 		"SELECT id, collection_name, description, category, documents, public, owner_id, created_at, updated_at FROM collections WHERE id = $1;",
-		id).Scan(&collection.Id, &collection.CollectionName, &collection.Description, &collection.Category, &documents, &collection.Public, &collection.Owner, &collection.CreatedAt, &collection.UpdatedAt); err != nil {
+		id).Scan(&collection.Id, &collection.CollectionName, &collection.Description, &collection.Category, &collection.Documents, &collection.Public, &collection.Owner, &collection.CreatedAt, &collection.UpdatedAt); err != nil {
 		return nil, err
-	}
-	if errDoc := collection.ScanDocuments(documents); errDoc != nil {
-		return nil, errDoc
+
 	}
 	return &collection, nil
 }
@@ -59,7 +52,7 @@ func (cm *CMT) CreateCollection(ci *m.CollectionInfo) error {
 	_, err := cm.DB.Exec(
 		`INSERT INTO collections (collection_name, description, documents, owner_id, category, public, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		ci.CollectionName, ci.Description, pq.Array(ci.Documents), ci.Owner, ci.Category, ci.Public, ci.CreatedAt, ci.UpdatedAt,
+		ci.CollectionName, ci.Description, &ci.Documents, ci.Owner, ci.Category, ci.Public, ci.CreatedAt, ci.UpdatedAt,
 	)
 	if err != nil {
 		return err
@@ -92,65 +85,60 @@ func (cm *CMT) DeleteCollection(id uint) error {
 	return nil
 }
 
-func (cm *CMT) AddBookToCollection(book int, cID int) error {
+func (cm *CMT) AddBookToCollection(book int, cID uint) error {
 	collection, err := cm.GetCollectionById(uint(cID))
 	if err != nil {
 		return err
 	}
-	indexCh := make(chan int)
+
+	indexCh := make(chan int, len(collection.Documents))
 	finding, cancel := context.WithCancel(context.Background())
-	for idx, curr := range collection.Documents {
-		go u.Find(finding, indexCh, idx, curr, book)
-	}
-	for {
-		idx, ok := <-indexCh
-		//the chanel was close due context cancel or there is no more values to check
-		if !ok {
-			cancel()
-			break
-		}
-		//if there was found a value means the book is already in the documents collection
+
+	go u.Find(finding, indexCh, collection.Documents, book)
+
+	for idx := range indexCh {
 		if idx != -1 {
 			cancel()
-			return errors.New("book already in the collection")
+			return errors.New("Error: found book in collection")
 		}
 	}
+	cancel()
 	collection.Documents = append(collection.Documents, book)
 	if _, errUpdate := cm.DB.Exec(
 		`UPDATE collections SET documents = $1`,
-		pq.Array(collection.Documents),
+		&collection.Documents,
 	); errUpdate != nil {
 		return errUpdate
 	}
 	return nil
 }
-func (cm *CMT) DeleteBookToCollection(book int, cID int) error {
+
+func (cm *CMT) DeleteBookToCollection(book int, cID uint) error {
 	collection, err := cm.GetCollectionById(uint(cID))
 	if err != nil {
 		return err
 	}
-	indexCh := make(chan int)
+
+	indexCh := make(chan int, len(collection.Documents))
 	finding, cancel := context.WithCancel(context.Background())
-	for idx, curr := range collection.Documents {
-		go u.Find(finding, indexCh, idx, curr, book)
-	}
-	var idx int
-	for {
-		val, ok := <-indexCh
-		if !ok {
-			cancel()
-			return errors.New("book not found")
-		}
-		if idx != -1 {
+
+	go u.Find(finding, indexCh, collection.Documents, book)
+
+	idx := -1
+	for val := range indexCh {
+		if val != -1 {
 			cancel()
 			idx = val
-			break
 		}
 	}
-	collection.Documents = append(collection.Documents[:idx], collection.Documents[idx:]...)
+	cancel()
+	if idx == -1 {
+		return errors.New("book not found")
+	}
+	collection.Documents = append(collection.Documents[:idx], collection.Documents[idx+1:]...)
 	if _, errUpdate := cm.DB.Exec(
 		`UPDATE collections SET documents = $1`,
-		pq.Array(collection.Documents),
+		&collection.Documents,
 	); errUpdate != nil {
 		return errUpdate
 	}

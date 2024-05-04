@@ -1,10 +1,11 @@
 package models
 
 import (
-	"encoding/json"
+	"database/sql/driver"
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -56,12 +57,54 @@ func (u *User) AddCollection(collection Collection) {
 } //todo
 func (u *User) DeleteCollection(collection Collection) {
 
-} //todo
+}
+
+// custom type of []int to implement scanner interface
+type Docs []int
+
+// manual implementation of Scanner interface from pq to properly read documents []interger from collection table to []int
+func (t *Docs) Scan(v interface{}) error {
+	if v == nil {
+		*t = Docs{}
+		return nil
+	}
+	bytes, ok := v.([]byte)
+	if !ok {
+		return fmt.Errorf("Scan is expected to receive a []byte from database, but got [%+v]", v)
+	}
+	str := string(bytes)
+	str = strings.TrimPrefix(str, "{")
+	str = strings.TrimSuffix(str, "}")
+	if len(str) == 0 {
+		return nil
+	}
+	numStr := strings.Split(str, ",")
+	for _, num := range numStr {
+		formated, err := strconv.Atoi(num)
+		if err != nil {
+			return err
+		}
+		*t = append(*t, formated)
+	}
+	return nil
+}
+
+// scanner interface needed for insert into table Docs type into documents properly
+func (t *Docs) Value() (driver.Value, error) {
+	s := ""
+	for _, num := range *t {
+		s += fmt.Sprintf("%v,", num)
+	}
+	if len(s) > 0 {
+		s = s[:len(s)-1] // Elimina el último carácter del string
+	}
+	return fmt.Sprintf("{%v}", s), nil
+}
 
 type CollectionInfo struct {
 	CollectionName string    `json:"name" db:"collection_name"`
 	Description    string    `json:"description" db:"description"`
-	Documents      []int     `json:"documents" db:"documents"`
+	Documents      Docs      `json:"documents" db:"documents"`
 	Owner          int       `json:"owner_id" db:"owner_id"` //only one usser can be owner
 	Category       string    `json:"category" db:"category"`
 	Public         bool      `json:"public" db:"public"`
@@ -69,6 +112,7 @@ type CollectionInfo struct {
 	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
 }
 
+// custom method to be used inside CMI
 func (ci *CollectionInfo) Iter() *map[string]string {
 	res := make(map[string]string)
 	if ci.CollectionName != "" {
@@ -90,47 +134,13 @@ type Collection struct {
 	Id int `json:"id" db:"id"`
 	CollectionInfo
 }
-
-// Implementa el método Scan para personalizar cómo se escanean los campos de Collection (culpa del tema de imcompatibilidad entre array de sql a el array []int de go)
-func (c *Collection) ScanDocuments(value interface{}) error {
-	// Convierte el valor escaneado a []byte, vamos a implementar de manera manual el metodo Scan y asi asegurarnos de que en la lectura no haya problemas
-	byteValue, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("unexpected type for value: %T", value)
-	}
-	// Decodifica el valor JSON almacenado en []byte en un mapa de cadenas, esto funciona ya que los metodos Scan devuelven los valores de los campos y el nombre del field puede ser sacado al parsearlos
-	var data map[string]interface{}
-	err := json.Unmarshal(byteValue, &data)
-	if err != nil {
-		return err
-	}
-	for key, val := range data {
-		switch key {
-		case "documents":
-			// Valida que el valor sea un array de enteros y lo asigna
-			if docs, ok := val.([]interface{}); ok {
-				for _, doc := range docs {
-					if docInt, ok := doc.(int); ok {
-						c.Documents = append(c.Documents, docInt)
-					}
-				}
-			}
-		default:
-			// Ignorar campos desconocidos
-		}
-	}
-	return nil
-}
-
 type UserCollections struct {
 	Owned, Added []Collection
 }
 
 func (c *Collection) AddBook(bookId int) {
-
 } //todo
 func (c *Collection) DeleteBook(bookId int) {
-
 } //todo
 type BookAuthor struct {
 	Name      string `json:"name"`
@@ -149,7 +159,6 @@ type Book struct {
 	Formats       map[string]string `json:"formats"`
 	DownloadCount int               `json:"download_count"`
 }
-
 type Gutendex struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
