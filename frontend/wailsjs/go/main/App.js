@@ -6,6 +6,10 @@ export function GetBook(arg1) {
   return window['go']['main']['App']['GetBook'](arg1);
 }
 
+export function GetBookFile(arg1) {
+  return window['go']['main']['App']['GetBookFile'](arg1);
+}
+
 export function GetBooks(arg1) {
   return window['go']['main']['App']['GetBooks'](arg1);
 }

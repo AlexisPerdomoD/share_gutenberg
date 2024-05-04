@@ -51,3 +51,6 @@ func (a *App) GetBook(id string) (*m.Book, *m.Err) {
 	}
 	return book, nil
 }
+func (a *App) GetBookFile(bi m.BookFileInfo) *m.Err {
+	return s.GetBookFile(bi)
+}

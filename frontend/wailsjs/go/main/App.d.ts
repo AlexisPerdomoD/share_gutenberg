@@ -4,4 +4,6 @@ import {models} from '../models';
 
 export function GetBook(arg1:string):Promise<models.Book|models.Err>;
 
+export function GetBookFile(arg1:models.BookFileInfo):Promise<models.Err>;
+
 export function GetBooks(arg1:{[key: string]: string}):Promise<models.Gutendex>;

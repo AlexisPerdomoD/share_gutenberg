@@ -18,6 +18,32 @@ export namespace models {
 	    download_count: number;
 	}
 	
+	
+	export interface Collection {
+	    id: number;
+	    name: string;
+	    description: string;
+	    documents: number[];
+	    owner_id: number;
+	    category: string;
+	    public: boolean;
+	    // Go type: time
+	    created_at: any;
+	    // Go type: time
+	    updated_at: any;
+	}
+	export interface CollectionInfo {
+	    name: string;
+	    description: string;
+	    documents: number[];
+	    owner_id: number;
+	    category: string;
+	    public: boolean;
+	    // Go type: time
+	    created_at: any;
+	    // Go type: time
+	    updated_at: any;
+	}
 	export interface Err {
 	    error: any;
 	    message: string;
