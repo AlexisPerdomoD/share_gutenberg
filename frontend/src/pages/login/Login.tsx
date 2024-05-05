@@ -1,6 +1,7 @@
 import {Form} from "react-router-dom"
 import LabeledInput from "../../components/LabeledInput"
 import Button from "../../components/Button"
+import {Link} from "react-router-dom"
 
 export default function Login() {
     return (
@@ -32,6 +33,11 @@ export default function Login() {
                   text="Log in"
                  />
               </Form>
+              <Link to={"/register"}>
+                <h4>
+                  don't have an account? Sign Up
+                </h4>
+              </Link>
             </div>    
         </div>
         
