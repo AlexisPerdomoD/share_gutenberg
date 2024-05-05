@@ -2,7 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Home from "./pages/home/Home";
 import BookProfile,{loader as bookProfileLoader} from "./pages/book-profile/BookProfile";
-
+import Login from "./pages/login/Login";
+import {IsLogged} from "./utils/midlewares";
 
 const router = createBrowserRouter([
     {
@@ -23,16 +24,21 @@ const router = createBrowserRouter([
                 path:"/:id",
                 element:<BookProfile />,
                 loader:bookProfileLoader
-                //view and crud operations with books to collections
+                //view and crud operations with book s to collections
             },
             {
                 path:"/collections",
                 //children maybe for collections id and crud operations with it 
-            }
+            } 
         ]
     },
     {
-        path:"/login"
+      path:"/profile",
+      element:<IsLogged children={<p>profile</p>} />
+    },
+    {
+        path:"/login",
+      element: <Login/>
     },
     {
         path:"/register"

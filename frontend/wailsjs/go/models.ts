@@ -55,6 +55,28 @@ export namespace models {
 	    previous: string;
 	    results: Book[];
 	}
+	export interface User {
+	    id: number;
+	    name: string;
+	    email: string;
+	    password: string;
+	    role: string;
+	    // Go type: time
+	    created_at: any;
+	    // Go type: time
+	    updated_at: any;
+	}
+	
+	export interface UserInfo {
+	    name: string;
+	    email: string;
+	    password: string;
+	    role: string;
+	    // Go type: time
+	    created_at: any;
+	    // Go type: time
+	    updated_at: any;
+	}
 
 }
 

@@ -22,6 +22,7 @@ export function QueryContextProvider({children}:{children:ReactNode}){
         ids:"",
         languages:""
     })
+  //quizas manejarlo con clave valor 
     const handleQueries = (params:Queries) => setQueries(params)
      return <>
     <QueryContext.Provider value={{queries, handleQueries}}>
