@@ -135,7 +135,8 @@ type Collection struct {
 	CollectionInfo
 }
 type UserCollections struct {
-	Owned, Added []Collection
+	Owned []Collection `json:"owned"`
+	Added []Collection `json:"added"`
 }
 
 func (c *Collection) AddBook(bookId int) {

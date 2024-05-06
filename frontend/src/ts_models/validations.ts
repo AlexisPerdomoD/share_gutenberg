@@ -33,6 +33,28 @@ export interface Book {
 	    formats: {[key: string]: string};
 	    download_count: number;
 	}*/
+export const PASS_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+
+export const userSchema:ZodType<m.UserInfo> = z.object({
+    name: z.string().max(50).default(""),
+    password:z.string().min(8).regex(PASS_REGEX),
+    email:z.string().email(),
+    role:z.enum(["user", "admin"]).default("user"),
+    created_at: z.date().default(new Date()),
+    updated_at:z.date().default(new Date())
+
+})
+
+// export interface UserInfo {
+// 	    name: string;
+// 	    email: string;
+// 	    password: string;
+// 	    role: string;
+// 	    // Go type: time
+// 	    created_at: any;
+// 	    // Go type: time
+// 	    updated_at: any;
+// 	}
 const validate = <T>(schema: ZodType<T>, data: unknown): T | undefined => {
     try {
         return schema.parse(data) as T

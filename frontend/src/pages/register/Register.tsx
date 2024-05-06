@@ -1,10 +1,17 @@
-import { type ReactElement } from "react"
+import { useEffect, type ReactElement } from "react"
 import {Link, useFetcher} from "react-router-dom"
 import LabeledInput from "../../components/LabeledInput"
 import Button from "../../components/Button"
 
+
+
+
+
 export default function Register(): ReactElement {
   const f = useFetcher()
+  useEffect(()=>{
+    f.data && console.log(f.data)
+  },[f])
 
   return (
     <div>
@@ -14,19 +21,12 @@ export default function Register(): ReactElement {
         <p>Create an account in order to have saved any time all your books and others' collections</p>
       </div>
       <div>
-        <f.Form>
+        <f.Form method="POST">
           <LabeledInput
-            name="first_name"
-            title="First Name"
+            name="name"
+            title="Full Name"
             type="text"
-            placeholder="Brenda"
-            onBlur={()=>{}}
-          />
-          <LabeledInput
-            name="last_name"
-            title="Last Name"
-            type="text"
-            placeholder="Gutenberg"
+            placeholder="Brenda Gutenberg"
             onBlur={()=>{}}
           />
           <LabeledInput
@@ -35,13 +35,7 @@ export default function Register(): ReactElement {
             type="email"
             placeholder="correo@service.com"
             onBlur={()=>{}}
-          />
-          <LabeledInput
-            name="username"
-            title="Username"
-            type="text"
-            placeholder="gutenberg"
-            onBlur={()=>{}}
+            required
           />
           <LabeledInput
             name="password"
@@ -49,9 +43,11 @@ export default function Register(): ReactElement {
             type="password"
             placeholder="********"
             onBlur={()=>{}}
+            required
           />
           <Button
             text="Sign up"
+            disabled ={f.state !== "idle"}
           />
         </f.Form>
         <Link to={"/login"}>

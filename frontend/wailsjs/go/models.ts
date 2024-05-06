@@ -66,7 +66,10 @@ export namespace models {
 	    // Go type: time
 	    updated_at: any;
 	}
-	
+	export interface UserCollections {
+	    owned: Collection[];
+	    added: Collection[];
+	}
 	export interface UserInfo {
 	    name: string;
 	    email: string;

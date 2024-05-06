@@ -3,7 +3,7 @@ import Layout from "./pages/Layout";
 import Home from "./pages/home/Home";
 import BookProfile,{loader as bookProfileLoader} from "./pages/book-profile/BookProfile";
 import Login from "./pages/login/Login";
-import {IsLogged} from "./utils/midlewares";
+import {IsLogged, signUp} from "./utils/midlewares";
 import Register from "./pages/register/Register";
 
 const router = createBrowserRouter([
@@ -43,6 +43,7 @@ const router = createBrowserRouter([
     },
     {
         path:"/register",
+        action: signUp,
         element:<Register />
     },
     {
